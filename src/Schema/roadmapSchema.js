@@ -7,6 +7,10 @@ const MilestoneSchema = z.object({
   duration: z.string(),
   status: z.enum(['pending', 'in-progress', 'completed']).default('pending'),
   provider: z.string().optional(),
+  progress: z.number().min(0).max(100).default(0),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  timeSpent: z.number().default(0),
 });
 
 const PhaseSchema = z.object({

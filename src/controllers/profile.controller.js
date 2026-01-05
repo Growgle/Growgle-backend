@@ -124,8 +124,8 @@ async function getDashboardData(req, res) {
 		const dashboardData = {
 			skillsMastered,
 			careerScore,
-			coursesCompleted: userData.dashboardData?.coursesCompleted || 8,
-			certifications: userData.dashboardData?.certifications || 3,
+			coursesCompleted: userData.dashboardData?.coursesCompleted || 0,
+			certifications: userData.dashboardData?.certifications || 0,
 			profileCompleteness,
 			recentActivities: userData.dashboardData?.recentActivities || [
 				{ action: "Updated", item: "Profile Skills", time: "1 hour ago", type: "skill" },

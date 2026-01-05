@@ -24,34 +24,7 @@ if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'https://gen-ai-exchange-w0to.onrender.com',
-  'https://growgle.vercel.app/',
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // callback(null, true);
-      // Uncomment the line below to strictly enforce allowed origins
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Set-Cookie'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-}));
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
 // DB and custom middleware

@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Basic env validation & helpful warnings
-const baseRequired = ['NEWS_API_KEY','PROJECT_ID'];
+const baseRequired = ['NEWS_API_KEY', 'PROJECT_ID'];
 const baseMissing = baseRequired.filter(k => !process.env[k]);
 if (baseMissing.length) {
   console.warn('Missing required env vars:', baseMissing.join(', '));
@@ -50,6 +50,10 @@ app.use('/api/roadmaps', roadmapRoutes);
 // LaTeX compile route
 const compileRoutes = require('./routes/compile.route.js');
 app.use('/api/compile', compileRoutes);
+
+// Chat routes
+const chatRoutes = require('./routes/chat.route.js');
+app.use('/api/chats', chatRoutes);
 
 // Key generation endpoint
 app.get('/generate-keys', ed25519KeygenMiddleware);

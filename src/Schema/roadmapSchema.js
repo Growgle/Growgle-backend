@@ -8,8 +8,8 @@ const MilestoneSchema = z.object({
   status: z.enum(['pending', 'in-progress', 'completed']).default('pending'),
   provider: z.string().optional(),
   progress: z.number().min(0).max(100).default(0),
-  startTime: z.string().optional(),
-  endTime: z.string().optional(),
+  startTime: z.string().nullable().optional(),
+  endTime: z.string().nullable().optional(),
   timeSpent: z.number().default(0),
 });
 
@@ -22,6 +22,13 @@ const PhaseSchema = z.object({
   milestones: z.array(MilestoneSchema).default([]),
 });
 
+// Active timer schema for cross-device sync
+const ActiveTimerSchema = z.object({
+  milestoneId: z.number(),
+  phaseId: z.number(),
+  startTime: z.string(), // ISO timestamp
+}).nullable().optional();
+
 const RoadmapSchema = z.object({
   title: z.string(),
   totalDuration: z.string(),
@@ -30,6 +37,8 @@ const RoadmapSchema = z.object({
   progress: z.number().min(0).max(100).default(0),
   startDate: z.string(),
   phases: z.array(PhaseSchema).default([]),
+  // Active timer state for cross-device sync
+  activeTimer: ActiveTimerSchema,
   // Optional linkage to user
   email: z.string().email().optional(),
   userId: z.string().optional(),

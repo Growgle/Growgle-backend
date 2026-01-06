@@ -117,6 +117,21 @@ async function getDashboardData(req, res) {
 		const doc = snap.docs[0];
 		const userData = doc.data();
 
+		// Fetch user's roadmaps and count completed ones (progress === 100)
+		let coursesCompleted = 0;
+		try {
+			const roadmapsQuery = db.collection('roadmaps').where('email', '==', email);
+			const roadmapsSnap = await roadmapsQuery.get();
+			if (!roadmapsSnap.empty) {
+				coursesCompleted = roadmapsSnap.docs.filter(roadmapDoc => {
+					const roadmapData = roadmapDoc.data();
+					return roadmapData.progress === 100;
+				}).length;
+			}
+		} catch (roadmapErr) {
+			console.error('Error fetching roadmaps for dashboard:', roadmapErr);
+		}
+
 		const skillsMastered = userData.skills?.filter(skill => skill.level >= 80).length || 0;
 		const profileCompleteness = calculateProfileCompleteness(userData);
 		const careerScore = Math.min(100, Math.round((skillsMastered * 10) + (profileCompleteness * 0.5) + (userData.experience?.length * 5 || 0)));
@@ -124,7 +139,7 @@ async function getDashboardData(req, res) {
 		const dashboardData = {
 			skillsMastered,
 			careerScore,
-			coursesCompleted: userData.dashboardData?.coursesCompleted || 0,
+			coursesCompleted,
 			certifications: userData.dashboardData?.certifications || 0,
 			profileCompleteness,
 			recentActivities: userData.dashboardData?.recentActivities || [
@@ -154,7 +169,7 @@ function calculateProfileCompleteness(userData) {
 		userData.name, userData.email, userData.phone, userData.location,
 		userData.title, userData.company, userData.bio
 	];
-	
+
 	fields.forEach(field => {
 		if (field && field.trim()) completeness += 10;
 	});
@@ -246,7 +261,7 @@ function generatePersonalizedRecommendations(userData) {
 }
 
 module.exports = { getUser, updateProfile, getDashboardData };
- 
+
 async function uploadResume(req, res) {
 	try {
 		const email = await resolveEmail(req);
@@ -316,7 +331,7 @@ async function uploadResume(req, res) {
 		};
 
 		if (req.body && typeof req.body.latex === 'string' && req.body.latex.trim()) {
-				updatedResume.latex = req.body.latex;
+			updatedResume.latex = req.body.latex;
 		}
 
 		const docRef = userDoc.ref;

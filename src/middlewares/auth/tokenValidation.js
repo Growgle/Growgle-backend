@@ -30,90 +30,98 @@ function getPublicKey() {
 
 // Token verification for "create" token
 async function tokenValidator(req, res, next) {
-    console.log("tokenValidator")
-    const tokenHeader = req.headers.authorization;
-    const token = tokenHeader && tokenHeader.split(' ')[1];
+  console.log("tokenValidator")
+  const tokenHeader = req.headers.authorization;
+  const token = tokenHeader && tokenHeader.split(' ')[1];
 
-    if (!token) {
-        console.log("No token provided"); 
-        return res.status(401).send({ MESSAGE: 'Missing or invalid token.' });
+  if (!token) {
+    console.log("No token provided");
+    return res.status(401).send({ MESSAGE: 'Missing or invalid token.' });
+  }
+
+  try {
+    const public_key = getPublicKey();
+    const payload = await verify(token, public_key);
+
+    if (!req.body) {
+      req.body = {};
     }
 
-    try {
-            const public_key = getPublicKey();
-              const payload = await verify(token, public_key);
-        
-        if (!req.body) {
-            req.body = {};  
-        } 
+    if (payload && payload.secret_key === secret_key) {
+      req.body.userid = payload.userid,
+        req.body.email = payload.email;
+      req.body.userId = payload.id;
+      req.body.name = payload.name;
+      req.body.role = payload.role;
 
-        if (payload && payload.secret_key === secret_key) {
-            req.body.userid = payload.userid,
-            req.body.email = payload.email;
-            req.body.userId = payload.id;
-            req.body.name = payload.name;
-            req.body.role = payload.role;
+      // Also set req.user for controllers that use it
+      req.user = {
+        userid: payload.userid,
+        email: payload.email,
+        userId: payload.id,
+        name: payload.name,
+        role: payload.role,
+      };
 
+      console.log("Token payload:", payload);
+      console.log("User details added to request body:");
+      return next();
 
-            console.log("Token payload:", payload);
-            console.log("User details added to request body:"); 
-            return next();  
-
-        } else {
-            console.log("Invalid token payload:", payload);
-            return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
-        }
-    } catch (err) {
-        console.log("Token verification error:", err.message);
-        return res.status(401).send({ MESSAGE: 'Invalid or expired token: ' + err.message });
+    } else {
+      console.log("Invalid token payload:", payload);
+      return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
     }
+  } catch (err) {
+    console.log("Token verification error:", err.message);
+    return res.status(401).send({ MESSAGE: 'Invalid or expired token: ' + err.message });
+  }
 }
 
 // Token verification for "create" token
 async function admintokenValidator(req, res, next) {
-    console.log("admintokenValidator")
-    const tokenHeader = req.headers.authorization;
-    const token = tokenHeader && tokenHeader.split(' ')[1];
+  console.log("admintokenValidator")
+  const tokenHeader = req.headers.authorization;
+  const token = tokenHeader && tokenHeader.split(' ')[1];
 
-    if (!token) {
-        console.log("No token provided"); 
-        return res.status(401).send({ MESSAGE: 'Missing or invalid token.' });
+  if (!token) {
+    console.log("No token provided");
+    return res.status(401).send({ MESSAGE: 'Missing or invalid token.' });
+  }
+
+  try {
+    const public_key = getPublicKey();
+    const payload = await verify(token, public_key);
+
+    if (!req.body) {
+      req.body = {};
     }
 
-    try {
-            const public_key = getPublicKey();
-              const payload = await verify(token, public_key);
-        
-        if (!req.body) {
-            req.body = {};  
-        }
+
+    if (payload && payload.secret_key === secret_key) {
+
+      req.body.email = payload.email;
+      req.body.userId = payload.id;
+      req.body.name = payload.name;
+      req.body.role = payload.role;
 
 
-        if (payload && payload.secret_key === secret_key) {
 
-            req.body.email = payload.email;
-            req.body.userId = payload.id;
-            req.body.name = payload.name;
-            req.body.role = payload.role; 
+      console.log("Token payload:", payload);
+      console.log("User details added to request body:");
+      console.log("User role:", payload.role);
+      if (payload.role !== 'admin') {
+        return res.status(401).send({ message: 'You are not authorized to access this resource.' });
+      }
 
-
-    
-            console.log("Token payload:", payload);
-            console.log("User details added to request body:");
-            console.log("User role:", payload.role); 
-            if (payload.role !== 'admin') {
-                return res.status(401).send({ message: 'You are not authorized to access this resource.' });
-            }
-            
-            next();
-        } else {
-            console.log("Invalid token payload:", payload); 
-            return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
-        }
-    } catch (err) {
-        console.error("Token verification error:", err.message);
-        return res.status(401).send({ MESSAGE: 'Invalid or expired token: ' + err.message });
+      next();
+    } else {
+      console.log("Invalid token payload:", payload);
+      return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
     }
+  } catch (err) {
+    console.error("Token verification error:", err.message);
+    return res.status(401).send({ MESSAGE: 'Invalid or expired token: ' + err.message });
+  }
 }
 
 async function readverifyForgotToken(req, res, next) {

@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const paseto = require('paseto');
 const { V4: { verify } } = paseto;
+const { triggerMultipleAgents, runAgentImplicitly } = require('../services/agentTriggerService.js');
 
 const db = connectDB();
 
@@ -93,6 +94,16 @@ async function updateProfile(req, res) {
 		await docRef.set(update, { merge: true });
 
 		const fresh = await docRef.get();
+		const updatedUserData = fresh.data();
+		const userId = fresh.id;
+		triggerMultipleAgents(userId, {
+			role: updatedUserData.role || updatedUserData.title,
+			skills: Array.isArray(updatedUserData.skills) ? updatedUserData.skills.map(s => s.name || s).join(',') : '',
+			experience: updatedUserData.experience || updatedUserData.experienceLevel,
+			interests: Array.isArray(updatedUserData.interests) ? updatedUserData.interests.join(',') : '',
+			location: updatedUserData.location,
+			targetRole: updatedUserData.targetRole || updatedUserData.role || updatedUserData.title
+		}, 'profile_update').catch(err => console.error('Agent trigger failed:', err));
 		return res.json({ success: true, data: { id: fresh.id, ...fresh.data() } });
 	} catch (error) {
 		console.error('updateProfile error:', error);
@@ -282,7 +293,7 @@ async function uploadResume(req, res) {
 			return res.status(404).json({ success: false, error: 'User not found' });
 		}
 		const userDoc = snap.docs[0];
-		const userData = userDoc.data();
+		let userData = userDoc.data();
 		const oldPublicId = userData.resume && userData.resume.publicId;
 
 		const emailKey = email
@@ -337,6 +348,12 @@ async function uploadResume(req, res) {
 		const docRef = userDoc.ref;
 		await docRef.set({ resume: updatedResume, updatedAt: updatedResume.lastUpdated }, { merge: true });
 		const fresh = await docRef.get();
+		userData = fresh.data();
+		const userId = fresh.id;
+		runAgentImplicitly('resumeOptimizationAgent', userId, {
+			resumeText: req.body.latex || originalname,
+			targetRole: userData.targetRole || userData.role || userData.title
+		}, 'resume_upload').catch(err => console.error('Resume agent failed:', err));
 		return res.json({ success: true, data: { id: fresh.id, ...fresh.data() } });
 	} catch (error) {
 		console.error('uploadResume error:', error);

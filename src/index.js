@@ -54,6 +54,8 @@ app.use('/api/compile', compileRoutes);
 // Chat routes
 const chatRoutes = require('./routes/chat.route.js');
 app.use('/api/chats', chatRoutes);
+const agentResultsRoute = require('./routes/agentResults.route.js');
+app.use('/api/agent-results', agentResultsRoute);
 
 // Key generation endpoint
 app.get('/generate-keys', ed25519KeygenMiddleware);

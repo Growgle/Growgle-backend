@@ -350,7 +350,8 @@ async function uploadResume(req, res) {
 		const fresh = await docRef.get();
 		userData = fresh.data();
 		const userId = fresh.id;
-		runAgentImplicitly('resumeOptimizationAgent', userId, {
+		console.log('Resume uploaded for userId:', userId);
+		runAgentImplicitly('resumeOptimizer', userId, {
 			resumeText: req.body.latex || originalname,
 			targetRole: userData.targetRole || userData.role || userData.title
 		}, 'resume_upload').catch(err => console.error('Resume agent failed:', err));

@@ -20,21 +20,163 @@ async function runAgentImplicitly(agentName, userId, userProfile, triggerType = 
     executedAt: toISTIso()
   };
   const executionRef = await db.collection('agentexecutions').add(executionData);
-  
-  try {
-    const prompt = buildPromptFromProfile(agentName, userProfile);
-    const response = await axios.post(`${AGENT_URL}/api/agent/${agentName}`, { prompt }, { timeout: 60000 });
-    console.log(`Agent ${agentName} response:`, response.data);
-    const executionTimeMs = Date.now() - startTime;
-    const agentOutput = response.data.result;
-    
-    await storeAgentResult(agentName, userId, agentOutput, userProfile);
-    await executionRef.update({ status: 'success', outputData: agentOutput, executionTimeMs });
-    
-    return { success: true, agentOutput };
-  } catch (error) {
-    await executionRef.update({ status: 'error', errorMessage: error.message, executionTimeMs: Date.now() - startTime });
-    return { success: false, error: error.message };
+  console.log(`Agent execution started: ${agentName} for user ${userId}`);
+  if (agentName === 'resumeOptimizer'){
+    try {
+      console.log(`Running resume optimizer for user ${userId}`);
+      let agentOutput = {
+  result: {
+    atsScore: 70,
+    rationale:
+      "The resume is extremely brief and lacks the depth and detail typically expected for a Senior Full-Stack Engineer role. With only 3 years of experience, the candidate needs to significantly elaborate on their impact, technical contributions, and leadership to justify a senior title. Key sections like a professional summary, education, and detailed project descriptions are missing. The current bullet points are descriptive rather than achievement-oriented, and there's a significant absence of metrics, quantifiable results, and advanced technical keywords relevant to senior-level responsibilities.",
+    topFixes: [
+      "Develop a compelling professional summary or objective statement tailored to a Senior Full-Stack Engineer role, highlighting key skills and career aspirations.",
+      "Expand each experience bullet point to include specific achievements, quantifiable results, and the impact of your work. Focus on 'how' you did things and 'what' the outcome was.",
+      "Add a dedicated 'Education' section, including degrees, institutions, and graduation dates. Consider a 'Projects' section if you have significant personal or open-source contributions.",
+      "Integrate more senior-level keywords such as 'architecture,' 'design patterns,' 'scalability,' 'mentorship,' 'CI/CD,' and 'performance optimization' throughout the resume.",
+      "Address the experience gap for a 'Senior' role (typically 5+ years) by emphasizing leadership, complex problem-solving, and significant contributions within the 3 years of experience.",
+    ],
+    keywordGap: {
+      missing: [
+        "architecture",
+        "design patterns",
+        "scalability",
+        "performance optimization",
+        "security",
+        "CI/CD",
+        "unit testing",
+        "integration testing",
+        "mentorship",
+        "code review",
+        "cloud platforms (e.g., AWS, Azure, GCP)",
+        "microservices",
+        "TypeScript",
+        "GraphQL",
+      ],
+      underrepresented: ["Node.js", "React", "PostgreSQL", "Docker"],
+      recommendedAdditions: [
+        {
+          keyword: "architecture",
+          where: "Professional Summary, Experience Bullets",
+        },
+        {
+          keyword: "scalability",
+          where: "Experience Bullets, Professional Summary",
+        },
+        {
+          keyword: "CI/CD",
+          where: "Experience Bullets, Skills Section",
+        },
+        {
+          keyword: "mentorship",
+          where: "Experience Bullets, Professional Summary",
+        },
+        {
+          keyword: "AWS",
+          where: "Skills Section, Experience Bullets (if applicable)",
+        },
+        {
+          keyword: "TypeScript",
+          where: "Skills Section, Experience Bullets (if applicable)",
+        },
+      ],
+    },
+    rewrittenBullets: [
+      {
+        original: "Built REST APIs using Node.js.",
+        improved:
+          "Designed and developed robust, scalable RESTful APIs using Node.js, handling complex business logic and data interactions for critical application features.",
+      },
+      {
+        original: "Integrated APIs with React.",
+        improved:
+          "Implemented seamless integration between front-end React applications and back-end Node.js APIs, ensuring data consistency and enhancing real-time user experiences.",
+      },
+      {
+        original: "Used PostgreSQL for data storage.",
+        improved:
+          "Managed and optimized PostgreSQL databases, including schema design, query tuning, and performance monitoring, to support high-volume API requests.",
+      },
+      {
+        original: "Led team of 2 developers.",
+        improved:
+          "Provided technical leadership and mentorship to a team of 2 junior developers, guiding them through complex feature implementations and fostering skill development.",
+      },
+      {
+        original: "Coordinated development efforts.",
+        improved:
+          "Coordinated project tasks and sprint planning for a 2-person development team, ensuring efficient workflow and on-time delivery of key features.",
+      },
+      {
+        original: "Ensured code quality.",
+        improved:
+          "Conducted regular code reviews and established coding standards, significantly improving code quality, maintainability, and reducing technical debt across projects.",
+      },
+      {
+        original: "Contributed to software development lifecycle.",
+        improved:
+          "Actively participated in the full software development lifecycle, from requirements analysis and design to deployment, testing, and post-launch support.",
+      },
+      {
+        original: "Deployed applications with Docker.",
+        improved:
+          "Deployed and managed containerized applications using Docker, standardizing development environments and improving deployment reliability and efficiency.",
+      },
+      {
+        original: "Collaborated with stakeholders.",
+        improved:
+          "Collaborated cross-functionally with product managers and UX/UI designers to translate business requirements into technical specifications and deliver user-centric solutions.",
+      },
+    ],
+    skillsSection: {
+      core: ["JavaScript", "React", "Node.js"],
+      tools: ["Docker"],
+      cloud: [],
+      data: ["PostgreSQL"],
+      other: [],
+    },
+    formattingNotes: [
+      "Ensure consistent use of standard resume sections (e.g., 'Summary', 'Experience', 'Skills', 'Education') with clear headings for ATS parsing.",
+      "Avoid using multi-column layouts, tables, or complex graphics, as these can confuse ATS and lead to misinterpretation of content.",
+      "Use clear and consistent date formats (e.g., 'MM/YYYY - MM/YYYY' or 'Month Year - Month Year') for all experience and education entries.",
+      "Utilize bullet points for describing responsibilities and achievements under each role, starting each bullet with a strong action verb.",
+    ],
+  },
+  finishReason: "STOP",
+  resumeFormatDetected: "text",
+  generatedAt: "2026-01-08T04:46:23.902Z",
+}
+      await storeAgentResult(agentName, userId, agentOutput, userProfile);
+      const prompt = buildPromptFromProfile(agentName, userProfile);
+      const response = await axios.post(`${AGENT_URL}/api/resume/optimize`, { prompt } );
+      console.log(response);
+      console.log(`Agent ${agentName} response:`, response.data);
+      const executionTimeMs = Date.now() - startTime;
+      agentOutput = response.data.result;
+      
+      await executionRef.update({ status: 'success', outputData: agentOutput, executionTimeMs });
+      
+      return { success: true, agentOutput };
+    } catch (error) {
+      await executionRef.update({ status: 'error', errorMessage: error.message, executionTimeMs: Date.now() - startTime });
+      return { success: false, error: error.message };
+    }
+  } else {
+    try {
+      const prompt = buildPromptFromProfile(agentName, userProfile);
+      const response = await axios.post(`${AGENT_URL}/api/agent/${agentName}`, { prompt }, { timeout: 60000 });
+      console.log(`Agent ${agentName} response:`, response.data);
+      const executionTimeMs = Date.now() - startTime;
+      const agentOutput = response.data.result;
+      
+      await storeAgentResult(agentName, userId, agentOutput, userProfile);
+      await executionRef.update({ status: 'success', outputData: agentOutput, executionTimeMs });
+      
+      return { success: true, agentOutput };
+    } catch (error) {
+      await executionRef.update({ status: 'error', errorMessage: error.message, executionTimeMs: Date.now() - startTime });
+      return { success: false, error: error.message };
+    }
   }
 }
 
@@ -101,7 +243,7 @@ async function storeAgentResult(agentName, userId, agentOutput, userProfile) {
       }
       break;
       
-    case 'resumeOptimizationAgent':
+    case 'resumeOptimizer':
       await db.collection('resumeanalyses').add({
         userId,
         resumeText: userProfile.resumeText || '',

@@ -1,38 +1,38 @@
-# Gen AI Exchange
+# Growgle Backend
 
 A comprehensive career development platform that provides personalized insights, roadmaps, and tools for professional growth. Built with Node.js, Express, and Firebase, featuring AI-powered recommendations and LaTeX resume compilation.
 
 ## Features
 
-### 🎯 Career Analytics & Insights
+### Career Analytics & Insights
 
 - **Skills Assessment**: Comprehensive skill evaluation and progress tracking
 - **Career Scoring**: Dynamic career score calculation based on skills, experience, and achievements
 - **Personalized Dashboard**: Real-time analytics with progress visualization
 - **Industry Trends**: Integration with news APIs and Google Trends for market insights
 
-### 📊 Data Intelligence
+### Data Intelligence
 
 - **BigQuery Integration**: Advanced analytics and data processing
 - **Vertex AI**: AI-powered career recommendations and insights
 - **News Analysis**: Real-time industry news aggregation and analysis
 - **Trend Monitoring**: Automated tracking of skill demand and market trends
 
-### 🗺️ Roadmap Management
+### Roadmap Management
 
 - **Personalized Roadmaps**: Custom learning paths based on career goals
 - **Milestone Tracking**: Progress monitoring with deadline management
 - **Skill Progression**: Detailed skill development tracking
 - **Achievement System**: Gamified learning with progress rewards
 
-### 📄 Resume Management
+### Resume Management
 
 - **PDF Upload & Storage**: Secure resume storage with Cloudinary integration
 - **LaTeX Compilation**: Professional resume generation using LaTeX/Tectonic
 - **Real-time Preview**: Live LaTeX editing with instant PDF preview
 - **Version Control**: Resume history and version management
 
-### 🔐 Authentication & Security
+### Authentication & Security
 
 - **PASETO Tokens**: Secure authentication with public key cryptography
 - **Role-based Access**: Granular permission system
@@ -41,8 +41,6 @@ A comprehensive career development platform that provides personalized insights,
 
 ## Tech Stack
 
-### Backend
-
 - **Runtime**: Node.js 22+ (CommonJS)
 - **Framework**: Express.js 5.x
 - **Database**: Firebase Firestore
@@ -50,23 +48,6 @@ A comprehensive career development platform that provides personalized insights,
 - **Validation**: Zod schemas
 - **File Storage**: Cloudinary
 - **Document Processing**: Tectonic LaTeX engine
-
-### Cloud Services
-
-- **Google Cloud Platform**:
-  - BigQuery for analytics
-  - Vertex AI for machine learning
-  - Firebase for database and auth
-- **Third-party APIs**:
-  - News API for industry insights
-  - Google Trends API for market analysis
-
-### Development
-
-- **Package Manager**: npm
-- **Development Server**: Nodemon
-- **Containerization**: Docker with Debian bookworm-slim
-- **Deployment**: Render (Docker-based)
 
 ## Quick Start
 
@@ -83,8 +64,8 @@ A comprehensive career development platform that provides personalized insights,
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/Raamprathap/Gen_AI_Exchange.git
-cd Gen_AI_Exchange
+git clone https://github.com/Growgle/Growgle-backend.git
+cd Growgle-backend
 ```
 
 2. **Install dependencies**
@@ -179,71 +160,6 @@ Authorization: Bearer <your-paseto-token>
 - `POST /api/ingest/news` - Ingest news data
 - `GET /api/setup` - Setup analytics pipeline
 
-## Docker Deployment
-
-### Using Docker Compose (Recommended)
-
-1. **Build and run**
-
-```bash
-docker build -t gen-ai-exchange .
-docker run -p 3002:3002 --env-file .env gen-ai-exchange
-```
-
-### Deploy to Render
-
-1. **Create a new Web Service on Render**
-
-   - Environment: Docker
-   - Build Command: (automatic from Dockerfile)
-   - Start Command: (automatic from Dockerfile)
-
-2. **Set Environment Variables**
-
-   - Add all variables from your `.env` file
-   - Use Secret Files for service account JSON
-   - Set `TECTONIC_PATH=/usr/bin/tectonic`
-
-3. **Health Check**
-   - Path: `/health`
-   - The service automatically includes health monitoring
-
-## Project Structure
-
-```
-src/
-├── config/
-│   ├── connectDB.js          # Firebase Firestore connection
-│   └── cloudinary.js         # Cloudinary configuration
-├── controllers/
-│   ├── auth.controller.js    # Authentication logic
-│   ├── profile.controller.js # User profile management
-│   ├── roadmap.controller.js # Roadmap CRUD operations
-│   └── compile.controller.js # LaTeX compilation
-├── middlewares/
-│   ├── auth/
-│   │   ├── tokenCreation.js  # PASETO token generation
-│   │   └── tokenValidation.js # Token verification
-│   ├── mail/
-│   │   ├── mailer.js         # Email service
-│   │   └── mail_template.js  # Email templates
-│   └── rsa/
-│       ├── key.js            # RSA key generation
-│       └── *.pem             # Public/private key files
-├── routes/
-│   ├── auth.route.js         # Authentication routes
-│   ├── profile.route.js      # Profile routes
-│   ├── roadmap.route.js      # Roadmap routes
-│   ├── compile.route.js      # LaTeX compilation routes
-│   └── insights.route.js     # Analytics routes
-├── Schema/
-│   ├── userSchema.js         # User data validation
-│   └── roadmapSchema.js      # Roadmap validation
-├── utils/
-│   └── latexWarmup.js        # LaTeX engine initialization
-└── index.js                  # Application entry point
-```
-
 ## Key Features in Detail
 
 ### LaTeX Resume Compilation
@@ -274,22 +190,6 @@ Comprehensive career planning tools:
 - **Phase Organization**: Structured learning progression
 - **Achievement Tracking**: Gamified skill development
 
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server with nodemon
-- `npm start` - Start production server
-- `npm run build` - No-op (Node.js project)
-
-### Code Style
-
-- **Format**: CommonJS modules
-- **Linting**: Follow standard JavaScript practices
-- **Error Handling**: Comprehensive try-catch blocks
-- **Logging**: Structured logging for debugging
-- **Validation**: Zod schemas for all inputs
-
 ### Testing
 
 ```bash
@@ -302,50 +202,6 @@ curl -X POST -H "Content-Type: text/plain" \
   http://localhost:3002/api/compile -o test.pdf
 ```
 
-## Environment Variables Reference
-
-| Variable                         | Required | Description                                       |
-| -------------------------------- | -------- | ------------------------------------------------- |
-| `PORT`                           | No       | Server port (default: 3002)                       |
-| `NODE_ENV`                       | No       | Environment mode (development/production)         |
-| `PROJECT_ID`                     | Yes      | Firebase project ID                               |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Yes      | Path to Firebase service account JSON             |
-| `NEWS_API_KEY`                   | Yes      | News API access key                               |
-| `CLOUDINARY_CLOUD_NAME`          | Yes      | Cloudinary cloud name                             |
-| `CLOUDINARY_API_KEY`             | Yes      | Cloudinary API key                                |
-| `CLOUDINARY_API_SECRET`          | Yes      | Cloudinary API secret                             |
-| `TECTONIC_PATH`                  | No       | Path to Tectonic binary (auto-detected in Docker) |
-| `LATEX_TIMEOUT_MS`               | No       | LaTeX compilation timeout (default: 15000)        |
-| `LATEX_WARMUP`                   | No       | Enable LaTeX warm-up (default: 1)                 |
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and add tests
-4. Commit your changes: `git commit -am 'Add feature'`
-5. Push to the branch: `git push origin feature-name`
-6. Submit a pull request
-
-## License
-
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Documentation**: Check this README and inline code comments
-- **Issues**: Use GitHub Issues for bug reports and feature requests
-- **Health Check**: Monitor service status at `/health` endpoint
-
-## Roadmap
-
-- [ ] Enhanced AI recommendations with Vertex AI
-- [ ] Real-time collaboration on roadmaps
-- [ ] Advanced analytics dashboard
-- [ ] Mobile API optimization
-- [ ] Integration with more career platforms
-- [ ] Enhanced LaTeX template library
-
 ---
 
-Built with ❤️ for career development and professional growth.
+Built with ❤️ by team Growgle.
